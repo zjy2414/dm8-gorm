@@ -72,8 +72,8 @@ func TestBuildUrl(t *testing.T) {
 		args args
 		want string
 	}{
-		{"escape", args{"SYSDBA", "abc!@#$%^", "127.0.0.1", 54321, []map[string]string{{"escapeProcess": "true"}}}, "dm://SYSDBA:abc%21%40%23$%25%5E@127.0.0.1:54321?escapeProcess=true"},
-		{"wrong", args{"SYSDBA", "abc!@#$%^", "127.0.0.1", 54321, []map[string]string{}}, "dm://SYSDBA:abc%21%40%23$%25%5E@127.0.0.1:54321"},
+		{"escape", args{"SYSDBA", "abc!@#$%^", "127.0.0.1", 54321, []map[string]string{{"escapeProcess": "true"}}}, "dm://SYSDBA:abc!@#$%^@127.0.0.1:54321?escapeProcess=true"},
+		{"wrong", args{"SYSDBA", "abc!@#$%^", "127.0.0.1", 54321, []map[string]string{}}, "dm://SYSDBA:abc!@#$%^@127.0.0.1:54321"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

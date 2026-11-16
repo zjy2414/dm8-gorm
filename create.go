@@ -75,7 +75,17 @@ func Create(db *gorm.DB) {
 					// 没有指定冲突列，merge into语句就无法构造
 					hasConflict = false
 				} else {
-					hasConflict = true
+					// 冲突列必须存在于插入列中，否则 MERGE INTO 的 ON 条件
+					// 会引用 excluded 中不存在的列（如自增主键未赋值时被 gorm 自动展开）导致 -2207
+					columnsMap := map[string]bool{}
+					for _, column := range values.Columns {
+						columnsMap[column.Name] = true
+					}
+					for _, col := range onConflict.Columns {
+						if !columnsMap[col.Name] {
+							hasConflict = false
+						}
+					}
 				}
 				//if db.Statement.Schema == nil {
 				//	// 无模型，直接指定Table

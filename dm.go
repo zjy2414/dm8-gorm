@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"net"
-	"net/url"
 	"strconv"
 	"strings"
 
@@ -58,22 +57,32 @@ func New(config Config) gorm.Dialector {
 //
 //   - 如： dm://user:password@host:port?schema=SYSDBA[&propName2=propValue2]…
 //   - 若要指定用户登录后的当前模式，请在 options 中设置 schema，缺省为用户的默认模式，如 SYSDBA
+//   - 密码等属性值不做 URL 转义（达梦驱动按原始字符解析连接串，特殊字符无需转义）
 //   - 参考链接： https://eco.dameng.com/document/dm/zh-cn/pm/go-rogramming-guide.html#11.3%20%E8%BF%9E%E6%8E%A5%E4%B8%B2%E5%B1%9E%E6%80%A7%E8%AF%B4%E6%98%8E
 func BuildUrl(user, password, host string, port int, urlOptions ...map[string]string) string {
-	propQuery := url.Values{}
-	for _, option := range urlOptions {
-		for key, value := range option {
-			propQuery.Add(key, value)
+	var builder strings.Builder
+	builder.WriteString("dm://")
+	builder.WriteString(user)
+	builder.WriteString(":")
+	builder.WriteString(password)
+	builder.WriteString("@")
+	builder.WriteString(net.JoinHostPort(host, strconv.Itoa(port)))
+
+	var options []string
+	for _, o := range urlOptions {
+		for key, value := range o {
+			if value == "" {
+				options = append(options, key)
+			} else {
+				options = append(options, key+"="+value)
+			}
 		}
 	}
-
-	dmUrl := &url.URL{
-		Scheme:   DriverName,
-		User:     url.UserPassword(user, password),
-		Host:     net.JoinHostPort(host, strconv.Itoa(port)),
-		RawQuery: propQuery.Encode(),
+	if len(options) > 0 {
+		builder.WriteString("?")
+		builder.WriteString(strings.Join(options, "&"))
 	}
-	return dmUrl.String()
+	return builder.String()
 }
 
 func (d Dialector) Name() string {

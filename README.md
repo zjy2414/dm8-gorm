@@ -167,14 +167,6 @@ db.AutoMigrate(&User{}, &Order{})
 └── dm_test.go   # 单元测试
 ```
 
-## 测试
-
-```shell
-go test ./...
-```
-
-当前测试均为单元测试（标识符引用符处理、`BuildUrl`），无需数据库实例。
-
 ## 参考文档
 
 - 达梦产品手册：<https://eco.dameng.com/document/dm/zh-cn/pm/>
